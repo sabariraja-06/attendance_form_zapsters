@@ -14,37 +14,29 @@
       "id": "web-dev",
       "name": "Web Development",
       "isActive": true,
-      "updatedAt": "2026-01-04T12:01:34.666Z"
+      "updatedAt": "2026-01-04T12:02:03.914Z"
     },
     "ui-ux": {
       "id": "ui-ux",
-      "name": "UI/UX",
-      "isActive": true,
-      "updatedAt": "2026-01-04T12:01:34.029Z"
+      "name": "UI/UX"
     },
     "cyber-security": {
       "id": "cyber-security",
       "name": "Cybersecurity",
       "isActive": true,
-      "updatedAt": "2026-01-04T12:01:34.690Z"
+      "updatedAt": "2026-01-04T12:02:03.963Z"
     },
     "game-dev": {
       "id": "game-dev",
-      "name": "Game Development",
-      "isActive": true,
-      "updatedAt": "2026-01-04T12:01:34.029Z"
+      "name": "Game Development"
     },
     "power-bi": {
       "id": "power-bi",
-      "name": "Power BI",
-      "isActive": true,
-      "updatedAt": "2026-01-04T12:01:34.028Z"
+      "name": "Power BI"
     },
     "aiml": {
       "id": "aiml",
-      "name": "AIML",
-      "isActive": true,
-      "updatedAt": "2026-01-04T12:01:34.029Z"
+      "name": "AIML"
     }
   },
   "sessions": {
@@ -53,7 +45,7 @@
       "domainId": "web-dev",
       "batchId": "batch-a",
       "attendanceCode": "123456",
-      "codeExpiresAt": "2026-01-04T13:01:21.710Z",
+      "codeExpiresAt": "2026-01-04T13:02:03.722Z",
       "date": "2024-12-27",
       "time": "10:00 AM"
     }
