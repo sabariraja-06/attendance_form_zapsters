@@ -180,9 +180,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const handleMockLogin = (mockEmail: string) => {
+    const handleMockLogin = async (mockEmail: string) => {
         setShowMockLogin(false); // Close modal
         setLoading(true);
+
+        // Ensure no residual Firebase session exists
+        if (isFirebaseEnabled && auth.currentUser) {
+            try {
+                await signOut(auth);
+            } catch (e) {
+                console.error("Error signing out residual user:", e);
+            }
+        }
 
         // Simulate login delay
         setTimeout(() => {

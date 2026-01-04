@@ -9,7 +9,7 @@ import {
     LogOut
 } from "lucide-react";
 import "./student.css";
-import ShinyText from "@/components/ShinyText";
+
 import LightPillar from "@/components/LightPillar";
 import AppFooter from "@/components/AppFooter";
 
@@ -63,14 +63,14 @@ export default function StudentLayout({
                 {/* Top Navigation for Student (Simpler than Admin) */}
                 <header className="student-header">
                     <div className="container header-container">
-                        <Link href="https://www.zapsters.in" target="_blank" className="brand-logo" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <Link href="https://www.zapsters.in" target="_blank" className="brand-logo" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                             {/* Logo from Zapsters Website */}
                             <img
                                 src="https://www.zapsters.in/assets/logo-Cvls4dij.png"
                                 alt="Zapsters Logo"
-                                style={{ height: '32px', width: 'auto' }}
+                                style={{ height: '48px', width: 'auto' }}
                             />
-                            <ShinyText text="Zapsters" color="#ffffff" shineColor="#ef4444" speed={3} />
+                            <span style={{ color: '#ef4444', fontWeight: '800', fontSize: '1.5rem', letterSpacing: '0.5px' }}>Zapsters</span>
                         </Link>
 
                         <nav className="student-nav">

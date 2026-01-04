@@ -98,6 +98,8 @@ exports.addTutor = async (req, res) => {
     try {
         const { name, email, domainId } = req.body;
 
+        if (!domainId) return res.status(400).json({ error: "Domain ID is required. Please create a domain first." });
+
         // Domain Validation
         const domainDoc = await db.collection('domains').doc(domainId).get();
         if (!domainDoc.exists) return res.status(404).json({ error: "Domain not found" });

@@ -71,15 +71,21 @@ export default function TutorsPage() {
 
     const handleAddTutor = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!newTutor.domainId) {
+            alert("Please select a domain. If no domains exist, create one in the Domains tap.");
+            return;
+        }
+
         try {
             await api.tutors.create(newTutor);
             setIsAddModalOpen(false);
             setNewTutor({ name: "", email: "", domainId: domains[0]?.id || "" });
             loadTutors(); // Refresh list
             alert("Tutor added successfully!");
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert("Error adding tutor");
+            alert(error.message || "Error adding tutor");
         }
     };
 
@@ -199,6 +205,7 @@ export default function TutorsPage() {
                             <div>
                                 <label className="input-label">Assign Domain</label>
                                 <select className="input" value={newTutor.domainId} onChange={e => setNewTutor({ ...newTutor, domainId: e.target.value })}>
+                                    <option value="">Select Domain</option>
                                     {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                                 </select>
                             </div>

@@ -33,12 +33,11 @@ export default function AppFooter({ className, theme = 'light' }: AppFooterProps
                     fontSize: '0.9rem',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.25rem',
                     flexWrap: 'wrap'
                 }}>
                     &copy; 2025 <span style={{ fontWeight: 800, color: brandColor }}>Zapsters</span>. All rights reserved.
                 </span>
             </div>
-        </footer>
+        </footer >
     );
 }
