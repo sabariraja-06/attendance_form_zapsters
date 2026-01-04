@@ -113,7 +113,12 @@ export default function BatchesPage() {
                             setNewBatch({ ...newBatch, domainId: e.target.value });
                         }}
                     >
-                        {domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                        <option value="" disabled>Select Domain</option>
+                        {domains.length > 0 ? (
+                            domains.map(d => <option key={d.id} value={d.id}>{d.name}</option>)
+                        ) : (
+                            <option value="">No domains found</option>
+                        )}
                     </select>
                 </div>
                 <button className="btn btn-primary" onClick={() => setShowModal(true)}>

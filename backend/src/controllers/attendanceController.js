@@ -87,13 +87,15 @@ exports.markAttendance = async (req, res) => {
         userData = userDoc.data();
 
         if (userData.domainId !== sessionData.domainId || userData.batchId !== sessionData.batchId) {
-            // For mock users, we might want to be lenient or ensure we created the session with matching defaults
-            if (userId.startsWith('mock-')) {
-                console.warn(`[MarkAttendance] Mock user hierarchy mismatch. Expected ${sessionData.domainId}/${sessionData.batchId}, got ${userData.domainId}/${userData.batchId}. Allowing for dev testing.`);
-                // OPTIONAL: Allow mismatch for dev testing convenience
-            } else {
-                return res.status(403).json({ error: "You are not assigned to this session's batch/domain" });
-            }
+            console.warn(`[MarkAttendance] Hierarchy Check Failed: User (${userData.domainId}/${userData.batchId}) vs Session (${sessionData.domainId}/${sessionData.batchId})`);
+
+            // FIXME: In strict production, this should be an error. 
+            // For now, if the user has NO batch assigned, or is Admin testing, we might allow it or provide a specific error.
+
+            // STRICT MODE: Uncomment to enforce strict matching
+            return res.status(403).json({
+                error: `Mismatch: You belong to ${userData.domainId}/${userData.batchId}, but this session is for ${sessionData.domainId}/${sessionData.batchId}`
+            });
         }
 
         // 4. Check Duplicate Attendance
