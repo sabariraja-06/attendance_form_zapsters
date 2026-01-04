@@ -6,6 +6,7 @@ import { User, AuthContextType } from '@/types';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signOut, signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { api } from '@/lib/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -60,28 +61,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             ...userDoc.data()
                         } as User;
                     } else {
-                        // Search by email
-                        const usersRef = collection(db, 'users');
-                        const q = query(usersRef, where('email', '==', firebaseUser.email));
-                        const querySnapshot = await getDocs(q);
+                        // Search by email - Wrap in try/catch to handle permission errors gracefully
+                        try {
+                            const usersRef = collection(db, 'users');
+                            const q = query(usersRef, where('email', '==', firebaseUser.email));
+                            const querySnapshot = await getDocs(q);
 
-                        if (!querySnapshot.empty) {
-                            const doc = querySnapshot.docs[0];
-                            userData = {
-                                id: doc.id,
-                                uid: firebaseUser.uid,
-                                ...doc.data()
-                            } as User;
-                        } else if (firebaseUser.email && ADMIN_ALLOWLIST.includes(firebaseUser.email)) {
-                            // Create admin user
-                            userData = {
-                                id: firebaseUser.uid,
-                                uid: firebaseUser.uid,
-                                email: firebaseUser.email,
-                                name: firebaseUser.displayName || 'Admin',
-                                role: 'admin',
-                                createdAt: new Date().toISOString()
-                            } as User;
+                            if (!querySnapshot.empty) {
+                                const doc = querySnapshot.docs[0];
+                                userData = {
+                                    id: doc.id,
+                                    uid: firebaseUser.uid,
+                                    ...doc.data()
+                                } as User;
+                            } else if (firebaseUser.email && ADMIN_ALLOWLIST.includes(firebaseUser.email)) {
+                                // Create admin user
+                                userData = {
+                                    id: firebaseUser.uid,
+                                    uid: firebaseUser.uid,
+                                    email: firebaseUser.email,
+                                    name: firebaseUser.displayName || 'Admin',
+                                    role: 'admin',
+                                    createdAt: new Date().toISOString()
+                                } as User;
+                            }
+                        } catch (queryErr) {
+                            console.warn("Could not query user by email (likely permissions). Proceeding with default student role.", queryErr);
+                            // Fall through to default creation
                         }
                     }
 
@@ -99,6 +105,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             createdAt: new Date().toISOString()
                         };
                         setUser(newStudent);
+
+                        // Fire-and-forget sync to ensure Backend creates the real record
+                        api.auth.sync().catch((e: any) => console.error("Background sync failed:", e));
                     }
                 } catch (err) {
                     console.error('Error fetching user data:', err);

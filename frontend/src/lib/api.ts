@@ -117,6 +117,10 @@ const apiClient = new ApiClient(API_URL);
 
 // Export API methods organized by domain
 export const api = {
+    auth: {
+        sync: () => apiClient.post('/api/auth/sync'),
+    },
+
     // Domain endpoints
     domains: {
         getAll: () => apiClient.get('/api/admin/domains'),
