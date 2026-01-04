@@ -5,7 +5,10 @@ import { Calendar, Clock, Link as LinkIcon, Copy, CheckCircle } from "lucide-rea
 import { api } from "@/lib/api";
 import "../admin.css";
 
+import { useAuth } from "@/contexts/AuthContext";
+
 export default function SessionsPage() {
+    const { user, loading: authLoading } = useAuth();
     const [domains, setDomains] = useState<any[]>([]);
     const [batches, setBatches] = useState<any[]>([]);
     const [sessions, setSessions] = useState<any[]>([]);
@@ -23,6 +26,8 @@ export default function SessionsPage() {
     const [error, setError] = useState("");
 
     useEffect(() => {
+        if (authLoading || !user) return;
+
         const fetchDomains = async () => {
             try {
                 const data: any = await api.domains.getAll();
@@ -33,11 +38,11 @@ export default function SessionsPage() {
             } catch (err) { console.error(err); }
         };
         fetchDomains();
-    }, []);
+    }, [authLoading, user]);
 
     // Load batches when domain changes
     useEffect(() => {
-        if (!domainId) return;
+        if (!domainId || authLoading || !user) return;
         const fetchBatches = async () => {
             try {
                 const data: any = await api.batches.getAll(domainId);
@@ -48,7 +53,7 @@ export default function SessionsPage() {
             } catch (err) { console.error(err); }
         };
         fetchBatches();
-    }, [domainId]);
+    }, [domainId, authLoading, user]);
 
     const handleCreateSession = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -84,6 +89,7 @@ export default function SessionsPage() {
     };
 
     const fetchSessions = async () => {
+        if (authLoading || !user) return;
         try {
             const data: any = await api.sessions.getAll();
             if (Array.isArray(data)) {
@@ -99,7 +105,7 @@ export default function SessionsPage() {
 
     useEffect(() => {
         fetchSessions();
-    }, []);
+    }, [authLoading, user]);
 
     return (
         <div className="dashboard-container">

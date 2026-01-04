@@ -18,7 +18,10 @@ interface Domain {
     name: string;
 }
 
+import { useAuth } from "@/contexts/AuthContext";
+
 export default function BatchesPage() {
+    const { user, loading: authLoading } = useAuth();
     const [batches, setBatches] = useState<Batch[]>([]);
     const [domains, setDomains] = useState<Domain[]>([]);
     const [selectedDomain, setSelectedDomain] = useState("web-dev");
@@ -33,12 +36,15 @@ export default function BatchesPage() {
     });
 
     useEffect(() => {
+        if (authLoading || !user) return;
+
         // Fetch Domains first
         const fetchDomains = async () => {
             try {
                 const data: any = await api.domains.getAll();
                 if (Array.isArray(data)) {
                     setDomains(data);
+                    // Only set default if we don't have one and data exists
                     if (data.length > 0 && !selectedDomain) setSelectedDomain(data[0].id);
                 } else {
                     console.error("Expected array for domains but got:", data);
@@ -50,10 +56,10 @@ export default function BatchesPage() {
             }
         };
         fetchDomains();
-    }, []);
+    }, [authLoading, user]); // Depend on auth state
 
     const fetchBatches = async () => {
-        if (!selectedDomain) return;
+        if (!selectedDomain || authLoading || !user) return;
         try {
             const data: any = await api.batches.getAll(selectedDomain);
             if (Array.isArray(data)) {
@@ -70,7 +76,7 @@ export default function BatchesPage() {
 
     useEffect(() => {
         fetchBatches();
-    }, [selectedDomain]);
+    }, [selectedDomain, authLoading, user]);
 
     const handleAddBatch = async (e: React.FormEvent) => {
         e.preventDefault();
