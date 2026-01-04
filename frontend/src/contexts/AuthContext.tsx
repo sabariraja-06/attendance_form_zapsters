@@ -16,6 +16,7 @@ const isFirebaseEnabled = auth !== null;
 // Admin allowlist - emails that can access admin panel
 const ADMIN_ALLOWLIST = [
     'admin@zapsters.com',
+    'admin@zapsters.in'
 ];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
