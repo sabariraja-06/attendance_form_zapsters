@@ -1,0 +1,62 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- Helper Functions ---
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is an admin (based on role field in user doc, secure but requires consistent user doc)
+    // IMPORTANT: For better security, use Custom Claims on the token. 
+    // Since we are using a simple role implementation, we'll verify against the user document as well
+    // OR just rely on logic. 
+    // Here we will assume any authenticated user can read public collections, 
+    // but writing is restricted to backend (via Admin SDK) which bypasses rules.
+    // Client SDK writes are largely disabled here.
+    
+    // --- Collection Rules ---
+
+    // 1. Domains: Public Read-Only (Students need it to see domain names, mostly Admins though)
+    match /domains/{domainId} {
+      allow read: if true; // Or restrict to isAuthenticated()
+      allow write: if false; // Only Admin SDK (Backend) can write
+    }
+
+    // 2. Batches: Public Read-Only
+    match /batches/{batchId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // 3. Users (Tutors/Students/Admins)
+    match /users/{userId} {
+      // Users can read their own profile
+      // Admins can read all (if we had a way to check admin role in rules easily without extra reads)
+      // For now, let's allow authenticated users to read their own profile.
+      allow read: if isAuthenticated() && (request.auth.uid == userId);
+      // Backend does all user management
+      allow write: if false;
+    }
+
+    // 4. Sessions
+    match /sessions/{sessionId} {
+      // Students need to read sessions to see their schedule
+      // We can restrict by batchId matching their user batchId if we want to be strict,
+      // but 'allow read: if isAuthenticated()' is mostly fine for this level of app.
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // 5. Attendance
+    match /attendance/{attendanceId} {
+      // Students can read their OWN attendance records
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid);
+      
+      // Writes are strictly validated by Backend (Mark Attendance API)
+      allow write: if false;
+    }
+  }
+}

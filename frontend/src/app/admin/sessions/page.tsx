@@ -2,22 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { Calendar, Clock, Link as LinkIcon, Copy, CheckCircle } from "lucide-react";
+import { api } from "@/lib/api";
 import "../admin.css";
 
 export default function SessionsPage() {
     const [domains, setDomains] = useState<any[]>([]);
+    const [batches, setBatches] = useState<any[]>([]);
+    const [sessions, setSessions] = useState<any[]>([]);
     const [domainId, setDomainId] = useState("");
-    const [batchId, setBatchId] = useState("batch-a");
+    const [batchId, setBatchId] = useState("");
 
-    useEffect(() => {
-        fetch('http://localhost:5001/api/admin/domains')
-            .then(res => res.json())
-            .then(data => {
-                setDomains(data);
-                if (data.length > 0) setDomainId(data[0].id);
-            })
-            .catch(err => console.error(err));
-    }, []);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [time, setTime] = useState("10:00");
     const [duration, setDuration] = useState(60);
@@ -28,6 +22,34 @@ export default function SessionsPage() {
     const [sessionDetails, setSessionDetails] = useState<any>(null);
     const [error, setError] = useState("");
 
+    useEffect(() => {
+        const fetchDomains = async () => {
+            try {
+                const data: any = await api.domains.getAll();
+                if (Array.isArray(data)) {
+                    setDomains(data);
+                    if (data.length > 0) setDomainId(data[0].id);
+                }
+            } catch (err) { console.error(err); }
+        };
+        fetchDomains();
+    }, []);
+
+    // Load batches when domain changes
+    useEffect(() => {
+        if (!domainId) return;
+        const fetchBatches = async () => {
+            try {
+                const data: any = await api.batches.getAll(domainId);
+                if (Array.isArray(data)) {
+                    setBatches(data);
+                    if (data.length > 0) setBatchId(data[0].id);
+                }
+            } catch (err) { console.error(err); }
+        };
+        fetchBatches();
+    }, [domainId]);
+
     const handleCreateSession = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -35,29 +57,20 @@ export default function SessionsPage() {
         setGeneratedCode(null);
 
         try {
-            const response = await fetch('http://localhost:5001/api/attendance/sessions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    domainId,
-                    batchId,
-                    date,
-                    time,
-                    durationMinutes: Number(duration),
-                    meetLink
-                })
+            const data: any = await api.sessions.create({
+                domainId,
+                batchId,
+                date,
+                time,
+                durationMinutes: Number(duration),
+                meetLink
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to create session");
-            }
 
             setGeneratedCode(data.attendanceCode);
             setSessionDetails(data);
+            fetchSessions(); // Refresh sessions list
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || "Failed to create session");
         } finally {
             setLoading(false);
         }
@@ -70,16 +83,34 @@ export default function SessionsPage() {
         }
     };
 
+    const fetchSessions = async () => {
+        try {
+            const data: any = await api.sessions.getAll();
+            if (Array.isArray(data)) {
+                setSessions(data);
+            } else {
+                setSessions([]);
+            }
+        } catch (err) {
+            console.error("Failed to load sessions", err);
+            setSessions([]);
+        }
+    };
+
+    useEffect(() => {
+        fetchSessions();
+    }, []);
+
     return (
         <div className="dashboard-container">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+            <div className="sessions-layout">
 
                 {/* Create Session Form */}
                 <div className="card">
                     <h3 className="card-title">Create New Session</h3>
                     <form onSubmit={handleCreateSession} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                        <div className="form-grid">
                             <div>
                                 <label className="input-label">Domain</label>
                                 <select className="input" value={domainId} onChange={(e) => setDomainId(e.target.value)}>
@@ -91,13 +122,14 @@ export default function SessionsPage() {
                             <div>
                                 <label className="input-label">Batch</label>
                                 <select className="input" value={batchId} onChange={(e) => setBatchId(e.target.value)}>
-                                    <option value="batch-a">Batch A</option>
-                                    <option value="batch-b">Batch B</option>
+                                    {batches.map(b => (
+                                        <option key={b.id} value={b.id}>{b.name}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                        <div className="form-grid">
                             <div>
                                 <label className="input-label">Date</label>
                                 <div className="input-with-icon">
@@ -183,6 +215,51 @@ export default function SessionsPage() {
 
                 </div>
 
+            </div>
+
+            {/* Sessions List */}
+            <div className="card full-width" style={{ marginTop: "2rem" }}>
+                <h3 className="card-title">All Sessions</h3>
+                <div className="table-responsive">
+                    <table className="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Domain</th>
+                                <th>Batch</th>
+                                <th>Code</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sessions.length === 0 ? (
+                                <tr><td colSpan={6} style={{ textAlign: "center", padding: "2rem" }}>No sessions created yet.</td></tr>
+                            ) : (
+                                sessions.map((session) => {
+                                    const now = new Date();
+                                    const expiresAt = session.codeExpiresAt?.toDate ? session.codeExpiresAt.toDate() : new Date(session.codeExpiresAt);
+                                    const isExpired = now > expiresAt;
+
+                                    return (
+                                        <tr key={session.id}>
+                                            <td>{session.date || 'N/A'}</td>
+                                            <td>{session.time || 'N/A'}</td>
+                                            <td>{session.domainId}</td>
+                                            <td>{session.batchId}</td>
+                                            <td style={{ fontFamily: "monospace", fontWeight: "600" }}>{session.attendanceCode}</td>
+                                            <td>
+                                                <span className={`badge ${isExpired ? 'badge-secondary' : 'badge-success'}`}>
+                                                    {isExpired ? 'Expired' : 'Active'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

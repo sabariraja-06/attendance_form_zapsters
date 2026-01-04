@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Calendar } from "lucide-react";
+import { api } from "@/lib/api";
 import "../admin.css";
 
 interface Batch {
@@ -33,19 +34,38 @@ export default function BatchesPage() {
 
     useEffect(() => {
         // Fetch Domains first
-        fetch('http://localhost:5001/api/admin/domains')
-            .then(res => res.json())
-            .then(data => {
-                setDomains(data);
-                if (data.length > 0) setSelectedDomain(data[0].id);
-            });
+        const fetchDomains = async () => {
+            try {
+                const data: any = await api.domains.getAll();
+                if (Array.isArray(data)) {
+                    setDomains(data);
+                    if (data.length > 0 && !selectedDomain) setSelectedDomain(data[0].id);
+                } else {
+                    console.error("Expected array for domains but got:", data);
+                    setDomains([]);
+                }
+            } catch (err) {
+                console.error("Failed to load domains", err);
+                setDomains([]);
+            }
+        };
+        fetchDomains();
     }, []);
 
-    const fetchBatches = () => {
+    const fetchBatches = async () => {
         if (!selectedDomain) return;
-        fetch(`http://localhost:5001/api/admin/batches?domainId=${selectedDomain}`)
-            .then(res => res.json())
-            .then(data => setBatches(data));
+        try {
+            const data: any = await api.batches.getAll(selectedDomain);
+            if (Array.isArray(data)) {
+                setBatches(data);
+            } else {
+                console.error("Expected array for batches but got:", data);
+                setBatches([]);
+            }
+        } catch (err) {
+            console.error("Failed to load batches", err);
+            setBatches([]);
+        }
     };
 
     useEffect(() => {
@@ -55,29 +75,38 @@ export default function BatchesPage() {
     const handleAddBatch = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:5001/api/admin/batches', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newBatch)
-            });
-            if (res.ok) {
-                setShowModal(false);
-                fetchBatches(); // Refresh
-                setNewBatch({ name: "", domainId: selectedDomain, startDate: "", endDate: "" });
-            }
+            await api.batches.create(newBatch);
+            setShowModal(false);
+            fetchBatches(); // Refresh
+            setNewBatch({ name: "", domainId: selectedDomain, startDate: "", endDate: "" });
         } catch (error) {
             console.error(error);
+            alert("Failed to add batch");
+        }
+    };
+
+    const handleDeleteBatch = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            await api.batches.delete(id);
+            fetchBatches();
+            alert("Batch deleted successfully");
+        } catch (error) {
+            console.error(error);
+            alert("Error deleting batch");
         }
     };
 
     return (
         <div className="dashboard-container">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-                <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+            <div className="batches-header">
+                <div className="batches-title-filter">
                     <h2 style={{ fontSize: "1.5rem", fontWeight: "700" }}>Batches</h2>
                     <select
                         className="input"
-                        style={{ width: "200px" }}
                         value={selectedDomain}
                         onChange={(e) => {
                             setSelectedDomain(e.target.value);
@@ -116,7 +145,10 @@ export default function BatchesPage() {
                                         <td>{batch.endDate || "N/A"}</td>
                                         <td><span className="badge" style={{ background: "#DCFCE7", color: "#166534" }}>Active</span></td>
                                         <td>
-                                            <button style={{ background: "none", border: "none", cursor: "pointer", color: "#EF4444" }}>
+                                            <button
+                                                onClick={() => handleDeleteBatch(batch.id, batch.name)}
+                                                style={{ background: "none", border: "none", cursor: "pointer", color: "#EF4444" }}
+                                            >
                                                 <Trash2 size={16} />
                                             </button>
                                         </td>
@@ -130,11 +162,16 @@ export default function BatchesPage() {
 
             {/* Add Batch Modal */}
             {showModal && (
-                <div style={{
-                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-                    background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100
-                }}>
-                    <div className="card" style={{ width: "450px" }}>
+                <div
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowModal(false);
+                    }}
+                    style={{
+                        position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                        background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100
+                    }}
+                >
+                    <div className="card" style={{ width: "450px", maxWidth: "90%" }}>
                         <h3 className="card-title">Create New Batch</h3>
                         <form onSubmit={handleAddBatch} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
 
@@ -154,7 +191,7 @@ export default function BatchesPage() {
                                 />
                             </div>
 
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                            <div className="form-grid">
                                 <div>
                                     <label className="input-label">Start Date</label>
                                     <input

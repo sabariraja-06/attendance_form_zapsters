@@ -22,6 +22,10 @@ app.get('/', (req, res) => {
   res.send('Zapsters Attendance API is running');
 });
 
+// Seed Domains
+const seedDomains = require('./utils/seedDomains');
+seedDomains();
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

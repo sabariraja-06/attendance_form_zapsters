@@ -1,53 +1,49 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { api } from "@/lib/api";
 import "../admin.css";
-
-interface Domain {
-    id: string;
-    name: string;
-}
+import { useFirestoreCollection } from "@/hooks/useFirestore";
+import { Domain } from "@/types";
 
 export default function DomainsPage() {
-    const [domains, setDomains] = useState<Domain[]>([]);
-    const [showModal, setShowModal] = useState(false);
+    // 1. Direct Firestore Read (Real-time updates without refreshing!)
+    const { data: domains, loading } = useFirestoreCollection<Domain>('domains', [], true);
+
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newDomainName, setNewDomainName] = useState("");
-
-    const fetchDomains = () => {
-        fetch('http://localhost:5001/api/admin/domains')
-            .then(res => res.json())
-            .then(data => setDomains(data))
-            .catch(err => console.error(err));
-    };
-
-    useEffect(() => {
-        fetchDomains();
-    }, []);
 
     const handleAddDomain = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!newDomainName.trim()) return;
         try {
-            const res = await fetch('http://localhost:5001/api/admin/domains', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: newDomainName })
-            });
-            if (res.ok) {
-                setShowModal(false);
-                setNewDomainName("");
-                fetchDomains();
-            }
+            await api.domains.create({ name: newDomainName });
+            setNewDomainName("");
+            setIsAddModalOpen(false);
+            // No need to fetchDomains() - hook updates automatically!
         } catch (error) {
             console.error(error);
+            alert("Failed to add domain");
+        }
+    };
+
+    const handleDeleteDomain = async (id: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+        try {
+            await api.domains.delete(id);
+            // No need to fetchDomains()
+        } catch (error) {
+            console.error(error);
+            alert("Failed to delete domain");
         }
     };
 
     return (
         <div className="dashboard-container">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+            <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h2 style={{ fontSize: "1.5rem", fontWeight: "700" }}>Domains</h2>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                <button className="btn btn-primary" onClick={() => setIsAddModalOpen(true)}>
                     <Plus size={18} style={{ marginRight: "0.5rem" }} />
                     Add Domain
                 </button>
@@ -60,23 +56,31 @@ export default function DomainsPage() {
                             <tr>
                                 <th>Domain Name</th>
                                 <th>Domain ID</th>
+                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {domains.length === 0 ? (
-                                <tr><td colSpan={3} style={{ textAlign: "center" }}>Loading domains...</td></tr>
+                            {loading ? (
+                                <tr><td colSpan={4} style={{ textAlign: "center" }}>Loading domains...</td></tr>
+                            ) : domains.length === 0 ? (
+                                <tr><td colSpan={4} style={{ textAlign: "center" }}>No domains found.</td></tr>
                             ) : (
                                 domains.map((domain) => (
                                     <tr key={domain.id}>
                                         <td style={{ fontWeight: 500 }}>{domain.name}</td>
                                         <td style={{ color: "var(--gray-500)", fontSize: "0.9rem" }}>{domain.id}</td>
                                         <td>
-                                            <div style={{ display: "flex", gap: "0.5rem" }}>
-                                                <button style={{ padding: "0.5rem", border: "1px solid #FECACA", borderRadius: "6px", background: "#FEF2F2", cursor: "pointer", color: "#DC2626" }}>
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
+                                            <span className="badge" style={{ background: "#ECFDF5", color: "#059669" }}>Active</span>
+                                        </td>
+                                        <td>
+                                            <button
+                                                onClick={() => handleDeleteDomain(domain.id, domain.name)}
+                                                style={{ background: "none", border: "none", cursor: "pointer", color: "#EF4444" }}
+                                                title="Delete Domain"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
@@ -87,25 +91,33 @@ export default function DomainsPage() {
             </div>
 
             {/* Add Domain Modal */}
-            {showModal && (
-                <div style={{
-                    position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-                    background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100
-                }}>
-                    <div className="card" style={{ width: "400px" }}>
+            {isAddModalOpen && (
+                <div
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setIsAddModalOpen(false);
+                    }}
+                    style={{
+                        position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+                        background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50
+                    }}
+                >
+                    <div className="card" style={{ width: "400px", maxWidth: "90%" }}>
                         <h3 className="card-title">Add New Domain</h3>
-                        <form onSubmit={handleAddDomain}>
-                            <input
-                                className="input"
-                                placeholder="Domain Name"
-                                style={{ marginBottom: "1rem" }}
-                                value={newDomainName}
-                                onChange={(e) => setNewDomainName(e.target.value)}
-                                required
-                            />
-                            <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end", marginTop: "1rem" }}>
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                                <button type="submit" className="btn btn-primary">Save Domain</button>
+                        <form onSubmit={handleAddDomain} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                            <div>
+                                <label className="input-label">Domain Name</label>
+                                <input
+                                    className="input"
+                                    required
+                                    placeholder="e.g. Web Development"
+                                    value={newDomainName}
+                                    onChange={e => setNewDomainName(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+                            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+                                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setIsAddModalOpen(false)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Add Domain</button>
                             </div>
                         </form>
                     </div>

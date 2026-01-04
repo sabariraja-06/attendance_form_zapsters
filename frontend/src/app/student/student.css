@@ -5,8 +5,8 @@
 }
 
 .student-header {
-    background-color: var(--white);
-    border-bottom: 1px solid var(--gray-200);
+    background-color: #1a1a1a;
+    border-bottom: 1px solid #333;
     padding: 0;
     margin-bottom: 2rem;
 }
@@ -30,7 +30,7 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border-radius: var(--radius);
-    color: var(--gray-500);
+    color: #a1a1aa;
     font-weight: 500;
     font-size: 0.9rem;
     transition: all 0.2s;
@@ -40,13 +40,13 @@
 }
 
 .student-nav-item:hover {
-    background-color: var(--gray-50);
-    color: var(--black);
+    background-color: #333;
+    color: #fff;
 }
 
 .student-nav-item.active {
-    background-color: #FEF2F2;
-    color: var(--primary-red);
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
 }
 
 .student-nav-item.logout {
@@ -65,8 +65,9 @@
 
 .welcome-title {
     font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--gray-900);
+    font-weight: 800;
+    /* Bold as requested */
+    color: #ffffff;
     margin-bottom: 0.5rem;
 }
 
@@ -172,4 +173,139 @@
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px dashed var(--gray-200);
+}
+
+.upcoming-session-card {
+    padding: 1rem;
+    background: #EFF6FF;
+    border-radius: 8px;
+    border: 1px solid #DBEAFE;
+}
+
+.upcoming-label {
+    font-weight: 600;
+    color: #1E40AF;
+    margin-bottom: 0.25rem;
+}
+
+.upcoming-details {
+    font-size: 0.9rem;
+    color: #3B82F6;
+    margin-bottom: 0.5rem;
+}
+
+.upcoming-link {
+    font-size: 0.85rem;
+    color: #2563EB;
+    text-decoration: underline;
+}
+
+/* Enhanced Mobile Responsiveness */
+@media (max-width: 768px) {
+    .attendance-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .student-header {
+        margin-bottom: 1rem;
+    }
+
+    .header-container {
+        height: auto;
+        min-height: 64px;
+        padding: 0.75rem 0;
+        flex-wrap: wrap;
+    }
+
+    .student-nav {
+        width: 100%;
+        justify-content: space-around;
+        margin-top: 0.5rem;
+    }
+
+    .student-nav-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .welcome-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .welcome-title {
+        font-size: 1.25rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .attendance-percentage {
+        font-size: 2.5rem;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .input-group .btn {
+        width: 100%;
+    }
+
+    .session-item {
+        padding: 0.75rem;
+    }
+
+    .session-date {
+        font-size: 0.9rem;
+    }
+
+    .session-time {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-content {
+        padding-bottom: 1rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    .welcome-title {
+        font-size: 1.125rem;
+    }
+
+    .attendance-percentage {
+        font-size: 2rem;
+    }
+
+    .student-nav-item {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Footer Styling */
+.zapsters-footer {
+    padding: 2rem 0;
+    margin-top: 4rem;
+    width: 100%;
+}
+
+.zapsters-footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Mobile Responsiveness for Footer */
+@media (max-width: 768px) {
+    .zapsters-footer {
+        padding: 1.5rem 0;
+        margin-top: 2rem;
+    }
 }

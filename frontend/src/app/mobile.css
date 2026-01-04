@@ -1,0 +1,184 @@
+/* Mobile-Specific Optimizations */
+
+/* Prevent text size adjustment on orientation change */
+html {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+/* Smooth scrolling on all devices */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+/* Better touch scrolling */
+body {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize buttons for touch */
+button,
+.btn,
+a {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    touch-action: manipulation;
+}
+
+/* Prevent double-tap zoom on buttons */
+button,
+.btn {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Optimize inputs for mobile */
+input,
+textarea,
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Better select styling on mobile */
+select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 12px;
+    padding-right: 2.5rem;
+}
+
+/* Mobile-specific utility classes */
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+
+    .show-mobile {
+        display: block !important;
+    }
+
+    /* Full width on mobile */
+    .mobile-full-width {
+        width: 100% !important;
+    }
+
+    /* Stack on mobile */
+    .mobile-stack {
+        flex-direction: column !important;
+    }
+
+    /* Remove margins on mobile */
+    .mobile-no-margin {
+        margin: 0 !important;
+    }
+
+    /* Smaller padding on mobile */
+    .mobile-compact {
+        padding: 0.5rem !important;
+    }
+}
+
+/* Landscape orientation optimizations */
+@media (max-width: 968px) and (orientation: landscape) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .main-content {
+        margin-left: 200px;
+    }
+
+    .top-header {
+        height: 56px;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 375px) {
+    body {
+        font-size: 13px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    h3 {
+        font-size: 1.1rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+
+    /* iOS Safari */
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"] {
+        min-height: 44px;
+    }
+
+    /* Fix iOS input zoom */
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* Android specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+    select {
+        background-image: none;
+    }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
+    /* Optimize for retina displays */
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Print styles */
+@media print {
+
+    .sidebar,
+    .top-header,
+    .btn,
+    button {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}

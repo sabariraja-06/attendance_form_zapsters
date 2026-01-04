@@ -10,10 +10,12 @@
   --gray-700: #374151;
   --gray-900: #111827;
 
-  --background: var(--gray-50); /* Minimal clean background */
+  --background: var(--gray-50);
+  /* Minimal clean background */
   --foreground: var(--black);
-  
-  --radius: 8px; /* Subtle rounded corners */
+
+  --radius: 8px;
+  /* Subtle rounded corners */
 }
 
 * {
@@ -68,7 +70,8 @@ a {
 }
 
 .btn-primary:hover {
-  background-color: #c40500; /* Slightly darker */
+  background-color: #c40500;
+  /* Slightly darker */
 }
 
 .card {
@@ -76,7 +79,25 @@ a {
   border: 1px solid var(--gray-200);
   border-radius: var(--radius);
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Flat minimal shadow */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  /* Flat minimal shadow */
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem;
+  background: #111;
+  border: 1px solid #333;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+  border-radius: var(--radius);
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.5rem;
+  }
 }
 
 .input {
@@ -93,4 +114,45 @@ a {
 .input:focus {
   outline: 2px solid var(--primary-red);
   border-color: transparent;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .container {
+    padding: 0 0.75rem;
+  }
+
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    min-height: 44px;
+    /* Touch-friendly */
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .input {
+    padding: 0.625rem;
+    font-size: 16px;
+    /* Prevents zoom on iOS */
+    min-height: 44px;
+    /* Touch-friendly */
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .card {
+    padding: 0.75rem;
+    border-radius: 6px;
+  }
 }
