@@ -35,11 +35,13 @@ export default function LoginPage() {
     setLocalError("");
     // @ts-ignore
     const email = e.target.email.value;
+    // @ts-ignore
+    const password = e.target.password.value;
 
-    // In Dev Mode/Developer Access, we force use the mock login
-    // This ensures functionality even if Firebase is misconfigured or keys are invalid
     try {
-      loginWithMock(email);
+      // In production, use real Firebase Auth
+      // In development, this will fallback to mock if Firebase is not enabled
+      await login(email, password);
     } catch (err: any) {
       setLocalError(err.message || "Login failed");
     }
