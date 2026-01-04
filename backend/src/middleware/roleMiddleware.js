@@ -16,6 +16,15 @@ const roleMiddleware = (allowedRoles = []) => {
                 });
             }
 
+            // SUPER ADMIN WHITELIST
+            // Explicitly allow specific emails to bypass role checks in any environment
+            const SUPER_ADMINS = ['admin@zapsters.in', 'admin@zapsters.com'];
+            if (req.user.email && SUPER_ADMINS.includes(req.user.email)) {
+                console.log(`[RoleMiddleware] Bypassing check for Super Admin: ${req.user.email}`);
+                req.user.role = 'admin'; // Set role for downstream logic
+                return next();
+            }
+
             // Development mode bypass - if user already has role set by authMiddleware, use it
             if (process.env.NODE_ENV !== 'production' && req.user.role) {
                 if (allowedRoles.length > 0 && !allowedRoles.includes(req.user.role)) {
