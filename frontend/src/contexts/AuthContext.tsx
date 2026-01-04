@@ -115,7 +115,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                     setError('Failed to load user data. Check console.');
                 }
             } else {
-                setUser(null);
+                // If no Firebase user, check if we have a persisted mock session
+                const mockEmail = typeof window !== 'undefined' ? localStorage.getItem('mockEmail') : null;
+                if (mockEmail) {
+                    console.log("Restoring mock session for:", mockEmail);
+                    // Re-hydrate mock user
+                    const isAdmin = mockEmail === 'admin@zapsters.com' || mockEmail === 'admin@zapsters.in';
+                    const mockUser: User = {
+                        id: 'mock-user-id',
+                        uid: 'mock-uid-' + mockEmail,
+                        email: mockEmail,
+                        name: isAdmin ? 'Admin User' : 'Test Student',
+                        role: isAdmin ? 'admin' : 'student',
+                        domainId: isAdmin ? undefined : 'web-dev',
+                        batchId: isAdmin ? undefined : 'batch-a',
+                        createdAt: new Date().toISOString()
+                    };
+                    setUser(mockUser);
+                } else {
+                    setUser(null);
+                }
             }
             setLoading(false);
         });
