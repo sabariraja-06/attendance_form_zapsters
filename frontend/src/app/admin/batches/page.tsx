@@ -188,7 +188,16 @@ export default function BatchesPage() {
 
                             <div>
                                 <label className="input-label">Domain</label>
-                                <input className="input" disabled value={domains.find(d => d.id === selectedDomain)?.name} style={{ background: "#f3f4f6" }} />
+                                <select
+                                    className="input"
+                                    value={newBatch.domainId}
+                                    onChange={(e) => setNewBatch({ ...newBatch, domainId: e.target.value })}
+                                >
+                                    <option value="" disabled>Select Domain</option>
+                                    {domains.map(d => (
+                                        <option key={d.id} value={d.id}>{d.name}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div>

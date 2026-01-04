@@ -69,13 +69,12 @@ exports.getBatches = async (req, res) => {
         const snapshot = await query.get();
         let batches = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // Mock Batches for Dev Mode (if DB is empty for this domain)
+        // Mock Batches removed for production consistency
+        /*
         if (batches.length === 0 && domainId === 'web-dev') {
-            batches = [
-                { id: 'batch-a', name: 'Mock Batch A', domainId: 'web-dev', startDate: '2024-01-01', endDate: '2024-12-31' },
-                { id: 'batch-b', name: 'Mock Batch B', domainId: 'web-dev', startDate: '2024-01-01', endDate: '2024-12-31' }
-            ];
+             // ... mock data removed ...
         }
+        */
 
         res.status(200).json(batches);
     } catch (error) {
