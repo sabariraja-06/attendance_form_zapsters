@@ -33,10 +33,11 @@ service cloud.firestore {
 
     // 3. Users (Tutors/Students/Admins)
     match /users/{userId} {
-      // Users can read their own profile
-      // Admins can read all (if we had a way to check admin role in rules easily without extra reads)
-      // For now, let's allow authenticated users to read their own profile.
-      allow read: if isAuthenticated() && (request.auth.uid == userId);
+      // Users can read their own profile by UID OR by email match (for initial lookup)
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId || 
+        resource.data.email == request.auth.token.email
+      );
       // Backend does all user management
       allow write: if false;
     }
